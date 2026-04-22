@@ -19,6 +19,11 @@ def filter_birth_year(year_str):
         return None
     return year_str
 
+def filter_age(year_str):
+    if int(year_str) < 7 or int(year_str)> 23:
+        return None
+    return year_str
+
 def fill_year(year_str):
     match = re.search(r'\d{2,4}', year_str)
     if not match:
@@ -90,6 +95,7 @@ with open(r'C:\Users\munas\Documents\data-prep\data_cleaning\alumni_anonymized.c
             new_row['Last_Name'] = row[0]
             new_row['Id_Number'] = row[3]
             new_row['Birth_Year'] = filter_birth_year(clean_dob(row[4]))
+            new_row['Age_At_Exit'] = filter_age(str(int(new_row['Exit_Year']) - int(new_row['Birth_Year']))) if new_row['Exit_Year'] and new_row['Birth_Year'] else None    
             entries.append(new_row)
             count += 1
 
@@ -105,10 +111,13 @@ df = pd.DataFrame(entries, columns=['Last_Name', 'Exit_Year', 'Id_Number', 'Birt
 df = df.set_index('Id_Number')
 df = df.dropna(subset=["Exit_Year"])
 df = df.dropna(subset=["Birth_Year"])
+df = df.dropna(subset=["Age_At_Exit"])
 df["Exit_Year"] = df["Exit_Year"].astype(int)
 df["Birth_Year"] = df["Birth_Year"].astype(int)
-df["Age_At_Exit"] = (df["Exit_Year"]-df["Birth_Year"]).astype(int)
+df["Age_At_Exit"] = df["Age_At_Exit"].astype(int)
 
 if __name__ == '__main__':
     #print(df.head(30))
-    print(df['Age_At_Exit'].mean())
+    #print(df['Age_At_Exit'].unique())
+    print(df[df["Exit_Year"].between(1900, 1940)]["Age_At_Exit"].mean())
+    print(df[df["Exit_Year"].between(1940, 1980)]["Age_At_Exit"].mean())
